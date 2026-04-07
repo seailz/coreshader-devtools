@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "coreshader-devtools",
+  "version": "${version}",
+  "name": "coreshader-devtools",
+  "description": "Tools to make core shader development slightly easier",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/coreshader-devtools/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.seailz.csdt.client.CoreShaderDevToolsClient"
+    ]
+  },
+  "mixins": [
+    "coreshader-devtools.mixins.json",
+    {
+      "config": "coreshader-devtools.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "26.2-alpha.1"
+  },
+  "_comment": "i dont know why it's not 26.2-snapshot-1"
+}
