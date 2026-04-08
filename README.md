@@ -16,6 +16,21 @@ https://github.com/user-attachments/assets/3cfe6218-7ea1-4d3d-81db-04d28ee53dd6
 - Parsing of post effect JSON files, and the ability to edit these too
 - Parsing and visualization of all render pipelines
 - Ability to override any value in the `Globals` uniform buffer
+- Shader debug logging via `dbg(...)` inside core and post shaders, with output written to the Minecraft log
+
+### Shader Debug Logging
+
+You can add calls like `dbg("time=" + GameTime);` to supported shader programs and the value will be written to `logs/latest.log`.
+
+Notes:
+- Works on both OpenGL and Vulkan
+- ASCII string literals are supported
+- Top-level string concatenation is supported, so `"abc" + someValue` works
+- Common scalar and vector values are converted to text automatically
+
+Warning:
+- `dbg(...)` is still expensive in hot shaders, especially fragment shaders
+- Frequently changing values such as `GameTime` can reduce FPS if logged aggressively
 
 ## License
 
