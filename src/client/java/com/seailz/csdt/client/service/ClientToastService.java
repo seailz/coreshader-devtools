@@ -5,6 +5,8 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.network.chat.Component;
 
+import java.lang.reflect.Method;
+
 public final class ClientToastService {
 
     private ClientToastService() {
@@ -16,6 +18,9 @@ public final class ClientToastService {
                 ? Component.literal("Completed in " + stat.durationMillis() + " ms")
                 : Component.literal("Failed: " + stat.message());
         show(title, message);
+        if (!stat.success()) {
+            showChatMessage(Component.literal("[Shader DevTools] " + title.getString() + " failed: " + stat.message()));
+        }
     }
 
     public static void showOverridesApplied(int activeOverrideCount) {
@@ -38,5 +43,19 @@ public final class ClientToastService {
         Minecraft minecraft = Minecraft.getInstance();
         ToastManager toastManager = minecraft.gui.toastManager();
         SystemToast.addOrUpdate(toastManager, SystemToast.SystemToastId.PERIODIC_NOTIFICATION, title, message);
+    }
+
+    private static void showChatMessage(Component message) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gui == null) {
+            return;
+        }
+        try {
+            Method getChatMethod = minecraft.gui.getClass().getMethod("getChat");
+            Object chatComponent = getChatMethod.invoke(minecraft.gui);
+            Method addMessageMethod = chatComponent.getClass().getMethod("addMessage", Component.class);
+            addMessageMethod.invoke(chatComponent, message);
+        } catch (ReflectiveOperationException ignored) {
+        }
     }
 }
