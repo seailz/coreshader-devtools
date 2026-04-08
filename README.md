@@ -3,6 +3,8 @@
 Client-side dev tools for working on Minecraft core shaders, post shaders, post effects, and render pipelines without restarting the game or reloading the resource pack.
 
 
+https://github.com/user-attachments/assets/3cfe6218-7ea1-4d3d-81db-04d28ee53dd6
+
 
 ## Features
 - Reload shaders, both core and post, on demand without having to fully reload the resource pack
