@@ -1,5 +1,7 @@
 # Shader DevTools
 
+Current version support is for `26.2-snapshot-1`
+
 Client-side fabric mod for working on Minecraft core shaders, post shaders, post effects, and render pipelines without restarting the game or reloading the resource pack.
 
 
