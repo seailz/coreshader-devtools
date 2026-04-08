@@ -137,7 +137,9 @@ public final class ShaderResourceOverrideService {
             Method method = ShaderManager.class.getDeclaredMethod("createPreprocessor", Map.class, Identifier.class);
             method.setAccessible(true);
             GlslPreprocessor preprocessor = (GlslPreprocessor) method.invoke(null, shaderResources, location);
-            return String.join("", preprocessor.process(source));
+            ShaderType shaderType = ShaderType.byLocation(location);
+            String processed = String.join("", preprocessor.process(source));
+            return shaderType == null ? processed : ShaderDebugSourceService.transformShaderSource(location, shaderType, processed);
         } catch (ReflectiveOperationException exception) {
             throw new IOException("Failed to preprocess shader source", exception);
         }

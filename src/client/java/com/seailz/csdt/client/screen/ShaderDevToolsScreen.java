@@ -36,6 +36,10 @@ public final class ShaderDevToolsScreen extends Screen {
                 this.minecraft.gui.setScreen(new GlobalsOverrideScreen(this))
         ).bounds(left, top, buttonWidth, buttonHeight).build());
         top += gap;
+        this.addRenderableWidget(Button.builder(Component.translatable("button.coreshader-devtools.log_viewer"), button ->
+                this.minecraft.gui.setScreen(new LogViewerScreen(this))
+        ).bounds(left, top, buttonWidth, buttonHeight).build());
+        top += gap;
 
         top += 24;
 

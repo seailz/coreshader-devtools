@@ -6,8 +6,16 @@
   "client": [
     "GameRendererAccess",
     "GameRendererMixin",
+    "GlBufferAccessor",
+    "GlCommandEncoderMixin",
+    "GlslCompilerMixin",
+    "ShaderManagerDebugMixin",
     "ShaderManagerMixin",
-    "VulkanDeviceMixin"
+    "VulkanBindGroupLayoutMixin",
+    "VulkanConstMixin",
+    "VulkanDeviceMixin",
+    "VulkanRenderPassMixin",
+    "VulkanRenderPassTextureBindingAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
