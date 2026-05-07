@@ -2,6 +2,7 @@ package com.seailz.csdt.client.mixins;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vulkan.Destroyable;
@@ -79,7 +80,7 @@ public abstract class VulkanRenderPassMixin {
         }
 
         if (VulkanRenderPass.VALIDATION) {
-            for (RenderPipeline.UniformDescription uniform : this.pipeline.info().getUniforms()) {
+            for (BindGroupLayout.UniformDescription uniform : BindGroupLayout.flattenUniforms(this.pipeline.info().getBindGroupLayouts())) {
                 GpuBufferSlice value = this.uniforms.get(uniform.name());
                 if (value == null) {
                     throw new IllegalStateException("Missing uniform " + uniform.name() + " (should be " + uniform.type() + ")");

@@ -1,5 +1,6 @@
 package com.seailz.csdt.client.screen;
 
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.seailz.csdt.client.service.ClientToastService;
 import com.seailz.csdt.client.service.PipelineInventoryService;
 import com.seailz.csdt.client.service.ShaderInventoryService;
@@ -161,13 +162,13 @@ public final class PipelineDetailScreen extends Screen {
         var pipeline = this.pipeline.pipeline();
 
         addHeader("Geometry");
-        addDetail("Vertex Format", String.valueOf(pipeline.getVertexFormat()));
-        addDetail("Draw Mode", String.valueOf(pipeline.getVertexFormatMode()));
+        addList("Vertex Formats", List.of(pipeline.getVertexFormatBindings()).stream().map(String::valueOf).toList());
+        addDetail("Primitive Topology", String.valueOf(pipeline.getPrimitiveTopology()));
         addDetail("Polygon Mode", String.valueOf(pipeline.getPolygonMode()));
 
         addHeader("Resources");
-        addList("Samplers", pipeline.getSamplers().stream().map(String::valueOf).toList());
-        addList("Uniforms", pipeline.getUniforms().stream().map(String::valueOf).toList());
+        addList("Samplers", BindGroupLayout.flattenSamplers(pipeline.getBindGroupLayouts()).stream().map(String::valueOf).toList());
+        addList("Uniforms", BindGroupLayout.flattenUniforms(pipeline.getBindGroupLayouts()).stream().map(String::valueOf).toList());
         addList("Defines", List.of(String.valueOf(pipeline.getShaderDefines())));
 
         addHeader("Targets");

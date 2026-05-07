@@ -24,7 +24,7 @@ public final class ShaderDebugInfoService {
             lines.add("Screen: " + minecraft.getWindow().getWidth() + "x" + minecraft.getWindow().getHeight());
             lines.add("GUI scale: " + minecraft.getWindow().getGuiScale());
             lines.add("Level loaded: " + (minecraft.level != null));
-            lines.add("Rendered sections: " + safeValue(() -> Integer.toString(minecraft.levelRenderer.countRenderedSections())));
+            lines.add("Rendered sections: " + safeValue(() -> Integer.toString(minecraft.levelRenderer.visibleSections().size())));
             lines.add("All sections ready: " + safeValue(() -> yesNo(minecraft.levelRenderer.hasRenderedAllSections())));
             lines.add("Active post effect: " + safeValue(() -> {
                 Identifier postEffect = minecraft.gameRenderer.currentPostEffect();

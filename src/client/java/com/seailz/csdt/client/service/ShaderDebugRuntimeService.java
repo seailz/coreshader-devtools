@@ -2,7 +2,6 @@ package com.seailz.csdt.client.service;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
@@ -82,8 +81,7 @@ public final class ShaderDebugRuntimeService {
     }
 
     private static void readAndLogMessages() {
-        CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
-        try (GpuBuffer.MappedView mapped = encoder.mapBuffer(storageBuffer, true, true)) {
+        try (GpuBufferSlice.MappedView mapped = storageBuffer.map(true, true)) {
             IntBuffer words = mapped.data().order(ByteOrder.nativeOrder()).asIntBuffer();
             List<ShaderDebugSourceService.DebugSite> sites = ShaderDebugSourceService.snapshotSites();
             for (ShaderDebugSourceService.DebugSite site : sites) {
@@ -158,7 +156,7 @@ public final class ShaderDebugRuntimeService {
                 GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_MAP_WRITE | GpuBuffer.USAGE_HINT_CLIENT_STORAGE | GpuBuffer.USAGE_UNIFORM | VULKAN_STORAGE_USAGE,
                 size
         );
-        try (GpuBuffer.MappedView mapped = RenderSystem.getDevice().createCommandEncoder().mapBuffer(storageBuffer, false, true)) {
+        try (GpuBufferSlice.MappedView mapped = storageBuffer.map(false, true)) {
             IntBuffer words = mapped.data().order(ByteOrder.nativeOrder()).asIntBuffer();
             for (int index = 0; index < words.limit(); index++) {
                 words.put(index, 0);

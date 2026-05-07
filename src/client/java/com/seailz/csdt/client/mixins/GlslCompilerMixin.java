@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Mixin(GlslCompiler.class)
 public abstract class GlslCompilerMixin {
@@ -24,7 +23,6 @@ public abstract class GlslCompilerMixin {
             RenderPipeline pipeline,
             IntermediaryShaderModule vertex,
             IntermediaryShaderModule fragment,
-            List<String> vertexInputs,
             CallbackInfoReturnable<GlslCompiler.CompiledModules> cir
     ) {
         if (ShaderDebugSourceService.slotCapacity() <= 0) {

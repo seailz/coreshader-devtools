@@ -1,8 +1,10 @@
 package com.seailz.csdt.client.service;
 
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.renderer.RenderPipelines;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -26,8 +28,8 @@ public final class PipelineInventoryService {
                 Fragment: %s
 
                 [Geometry]
-                Vertex Format: %s
-                Draw Mode: %s
+                Vertex Formats: %s
+                Primitive Topology: %s
                 Polygon Mode: %s
 
                 [Resources]
@@ -43,17 +45,21 @@ public final class PipelineInventoryService {
                 """.formatted(
                 shortId(pipeline.getVertexShader()),
                 shortId(pipeline.getFragmentShader()),
-                pipeline.getVertexFormat(),
-                pipeline.getVertexFormatMode(),
+                Arrays.toString(pipeline.getVertexFormatBindings()),
+                pipeline.getPrimitiveTopology(),
                 pipeline.getPolygonMode(),
-                pipeline.getSamplers().isEmpty() ? "<none>" : String.join(", ", pipeline.getSamplers()),
-                pipeline.getUniforms().isEmpty() ? "<none>" : pipeline.getUniforms().toString(),
+                formatList(BindGroupLayout.flattenSamplers(pipeline.getBindGroupLayouts())),
+                formatList(BindGroupLayout.flattenUniforms(pipeline.getBindGroupLayouts())),
                 pipeline.getShaderDefines(),
                 pipeline.isCull() ? "Enabled" : "Disabled",
                 pipeline.wantsDepthTexture() ? "Yes" : "No",
                 pipeline.getColorTargetState(),
                 pipeline.getDepthStencilState() == null ? "<none>" : pipeline.getDepthStencilState().toString()
         ).trim();
+    }
+
+    private static String formatList(List<?> values) {
+        return values.isEmpty() ? "<none>" : values.toString();
     }
 
     private static String shortId(Object value) {
