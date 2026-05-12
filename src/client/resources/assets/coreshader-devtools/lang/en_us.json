@@ -11,6 +11,8 @@
   "button.coreshader-devtools.reload_core": "Reload Core",
   "button.coreshader-devtools.reload_post": "Reload Post",
   "button.coreshader-devtools.reload_all": "Reload All",
+  "button.coreshader-devtools.mc307387_fix_on": "MC-307387 Fix: On",
+  "button.coreshader-devtools.mc307387_fix_off": "MC-307387 Fix: Off",
   "button.coreshader-devtools.reset_overrides": "Reset Overrides",
   "button.coreshader-devtools.refresh_logs": "Refresh",
   "button.coreshader-devtools.follow_tail_on": "Follow: On",

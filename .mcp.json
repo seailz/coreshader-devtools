@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "shader-devtools": {
+      "command": "python",
+      "args": [
+        "mcp/csdt_mcp_server.py"
+      ],
+      "env": {
+        "CSDT_CONTROL_URL": "http://127.0.0.1:34783"
+      }
+    }
+  }
+}
+

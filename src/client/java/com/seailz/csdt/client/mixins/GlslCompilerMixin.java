@@ -5,17 +5,36 @@ import com.mojang.blaze3d.vulkan.VulkanBindGroupLayout;
 import com.mojang.blaze3d.vulkan.VulkanDevice;
 import com.mojang.blaze3d.vulkan.glsl.GlslCompiler;
 import com.mojang.blaze3d.vulkan.glsl.IntermediaryShaderModule;
+import com.mojang.blaze3d.vulkan.glsl.ShaderCompileException;
+import com.seailz.csdt.client.service.Mc307387FixService;
 import com.seailz.csdt.client.service.ShaderDebugSourceService;
 import org.lwjgl.vulkan.VK12;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(GlslCompiler.class)
 public abstract class GlslCompilerMixin {
+
+    @Inject(method = "addToBindGroup", at = @At("HEAD"), cancellable = true)
+    private static void csdt$acceptAllShaderUniforms(
+            List<VulkanBindGroupLayout.Entry> entries,
+            IntermediaryShaderModule module,
+            RenderPipeline pipeline,
+            CallbackInfo ci
+    ) throws ShaderCompileException {
+        if (!Mc307387FixService.isEnabled()) {
+            return;
+        }
+
+        Mc307387FixService.addShaderDefinedResources(entries, module, pipeline);
+        ci.cancel();
+    }
 
     @Inject(method = "compile", at = @At("RETURN"), cancellable = true)
     private void csdt$appendShaderDebugBinding(

@@ -32,6 +32,10 @@ Warning:
 - `dbg(...)` is still expensive in hot shaders, especially fragment shaders
 - Frequently changing values such as `GameTime` can reduce FPS if logged aggressively
 
+### MCP
+
+When the client starts, Shader DevTools opens a local control server on `127.0.0.1:34783`. The repository includes a tiny stdio MCP server at `mcp/csdt_mcp_server.py` with tools for `refresh_shaders` and `take_screenshot`.
+
 ## License
 
 MIT
