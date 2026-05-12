@@ -1,7 +1,6 @@
 package com.seailz.csdt.client.screen;
 
 import com.seailz.csdt.client.service.ShaderDebugInfoService;
-import com.seailz.csdt.client.service.Mc307387FixService;
 import com.seailz.csdt.client.service.ShaderReloadService;
 import com.seailz.csdt.client.state.GlobalsOverrideState;
 import net.minecraft.client.Minecraft;
@@ -15,7 +14,6 @@ import java.util.List;
 public final class ShaderDevToolsScreen extends Screen {
 
     private final Screen parent;
-    private Button mc307387FixButton;
 
     public ShaderDevToolsScreen(Screen parent) {
         super(Component.translatable("screen.coreshader-devtools.shader_dev_tools"));
@@ -60,13 +58,6 @@ public final class ShaderDevToolsScreen extends Screen {
         ).bounds(left, top, buttonWidth, buttonHeight).build());
         top += gap;
 
-        this.mc307387FixButton = this.addRenderableWidget(Button.builder(mc307387FixLabel(), button -> {
-            Mc307387FixService.toggle();
-            this.mc307387FixButton.setMessage(mc307387FixLabel());
-            ShaderReloadService.reloadAllShaders();
-        }).bounds(left, top, buttonWidth, buttonHeight).build());
-        top += gap;
-
         top += 24;
 
         this.addRenderableWidget(Button.builder(Component.translatable("button.coreshader-devtools.reset_overrides"), button ->
@@ -86,12 +77,6 @@ public final class ShaderDevToolsScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
-    }
-
-    private static Component mc307387FixLabel() {
-        return Component.translatable(Mc307387FixService.isEnabled()
-                ? "button.coreshader-devtools.mc307387_fix_on"
-                : "button.coreshader-devtools.mc307387_fix_off");
     }
 
     @Override

@@ -49,6 +49,7 @@ public abstract class VulkanBindGroupLayoutMixin {
                     .pBindings(bindings);
             LongBuffer pointer = stack.mallocLong(1);
             VulkanUtils.crashIfFailure(
+                    device,
                     VK12.vkCreateDescriptorSetLayout(device.vkDevice(), setCreateInfo, null, pointer),
                     "Can't set layout for " + name
             );

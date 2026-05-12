@@ -69,7 +69,7 @@ public final class McpControlServerService {
             return;
         }
 
-        sendJson(exchange, 200, "{\"ok\":true,\"mc307387FixEnabled\":" + Mc307387FixService.isEnabled() + "}");
+        sendJson(exchange, 200, "{\"ok\":true}");
     }
 
     private static void handleRefreshShaders(HttpExchange exchange) throws IOException {

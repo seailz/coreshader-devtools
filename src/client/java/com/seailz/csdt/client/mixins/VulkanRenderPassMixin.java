@@ -13,7 +13,6 @@ import com.mojang.blaze3d.vulkan.VulkanGpuBuffer;
 import com.mojang.blaze3d.vulkan.VulkanRenderPass;
 import com.mojang.blaze3d.vulkan.VulkanRenderPipeline;
 import com.mojang.blaze3d.vulkan.VulkanUtils;
-import com.seailz.csdt.client.service.Mc307387FixService;
 import com.seailz.csdt.client.service.ShaderDebugRuntimeService;
 import com.seailz.csdt.client.service.ShaderDebugSourceService;
 import org.lwjgl.system.MemoryStack;
@@ -67,10 +66,6 @@ public abstract class VulkanRenderPassMixin {
     private void csdt$pushShaderDebugDescriptor(CallbackInfo ci) {
         if (this.pipeline == null) {
             return;
-        }
-
-        if (Mc307387FixService.isEnabled()) {
-            Mc307387FixService.bindDefaultAndFallbackUniforms(this.uniforms, this.pipeline.layout());
         }
 
         VulkanBindGroupLayout layout = this.pipeline.layout();
@@ -175,6 +170,7 @@ public abstract class VulkanRenderPassMixin {
                         }
                         viewCreateInfo.format(VulkanConst.toVk(entry.texelBufferFormat()));
                         VulkanUtils.crashIfFailure(
+                                this.device,
                                 VK12.vkCreateBufferView(this.device.vkDevice(), viewCreateInfo, null, bufferViewPtr),
                                 "Couldn't create buffer view for texel buffer"
                         );
