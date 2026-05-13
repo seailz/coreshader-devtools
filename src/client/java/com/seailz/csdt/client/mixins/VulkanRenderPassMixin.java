@@ -5,9 +5,9 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vulkan.Destroyable;
 import com.mojang.blaze3d.vulkan.VulkanBindGroupLayout;
 import com.mojang.blaze3d.vulkan.VulkanConst;
+import com.mojang.blaze3d.vulkan.VulkanCommandEncoder;
 import com.mojang.blaze3d.vulkan.VulkanDevice;
 import com.mojang.blaze3d.vulkan.VulkanGpuBuffer;
 import com.mojang.blaze3d.vulkan.VulkanRenderPass;
@@ -32,7 +32,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 @Mixin(VulkanRenderPass.class)
 public abstract class VulkanRenderPassMixin {
@@ -43,7 +42,7 @@ public abstract class VulkanRenderPassMixin {
 
     @Shadow
     @Final
-    private Consumer<Destroyable> garbageQueue;
+    private VulkanCommandEncoder encoder;
 
     @Shadow
     private boolean anyDescriptorDirty;
@@ -60,7 +59,8 @@ public abstract class VulkanRenderPassMixin {
     protected HashMap<String, Object> textures;
 
     @Shadow
-    protected abstract VkCommandBuffer secondaryCommandBuffer();
+    @Final
+    private VkCommandBuffer commandBuffer;
 
     @Inject(method = "pushDescriptors", at = @At("HEAD"), cancellable = true)
     private void csdt$pushShaderDebugDescriptor(CallbackInfo ci) {
@@ -175,14 +175,14 @@ public abstract class VulkanRenderPassMixin {
                                 "Couldn't create buffer view for texel buffer"
                         );
                         long bufferViewHandle = bufferViewPtr.get(0);
-                        this.garbageQueue.accept(() -> VK12.vkDestroyBufferView(this.device.vkDevice(), bufferViewHandle, null));
+                        this.encoder.queueForDestroy(() -> VK12.vkDestroyBufferView(this.device.vkDevice(), bufferViewHandle, null));
                         set.descriptorType(VK12.VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER);
                         set.pTexelBufferView(bufferViewPtr);
                     }
                 }
             }
             KHRPushDescriptor.vkCmdPushDescriptorSetKHR(
-                    this.secondaryCommandBuffer(),
+                    this.commandBuffer,
                     VK12.VK_PIPELINE_BIND_POINT_GRAPHICS,
                     this.pipeline.pipelineLayout(),
                     0,
