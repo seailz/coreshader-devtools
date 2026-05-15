@@ -9,6 +9,8 @@
     "GlBufferAccessor",
     "GlCommandEncoderMixin",
     "GlslCompilerMixin",
+    "GpuDeviceMixin",
+    "RenderPassMixin",
     "ShaderManagerDebugMixin",
     "ShaderManagerMixin",
     "VulkanBindGroupLayoutMixin",
