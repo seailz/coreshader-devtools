@@ -32,6 +32,10 @@ public final class ShaderDevToolsScreen extends Screen {
                 this.minecraft.gui.setScreen(new ShaderInventoryScreen(this))
         ).bounds(left, top, buttonWidth, buttonHeight).build());
         top += gap;
+        this.addRenderableWidget(Button.builder(Component.translatable("button.coreshader-devtools.uniform_inspector"), button ->
+                this.minecraft.gui.setScreen(new UniformInspectorScreen(this))
+        ).bounds(left, top, buttonWidth, buttonHeight).build());
+        top += gap;
         this.addRenderableWidget(Button.builder(Component.translatable("button.coreshader-devtools.globals_overrides"), button ->
                 this.minecraft.gui.setScreen(new GlobalsOverrideScreen(this))
         ).bounds(left, top, buttonWidth, buttonHeight).build());
