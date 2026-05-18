@@ -15,6 +15,7 @@ import com.mojang.blaze3d.vulkan.VulkanRenderPipeline;
 import com.mojang.blaze3d.vulkan.VulkanUtils;
 import com.seailz.csdt.client.service.ShaderDebugRuntimeService;
 import com.seailz.csdt.client.service.ShaderDebugSourceService;
+import com.seailz.csdt.client.service.UniformInspectorService;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRPushDescriptor;
 import org.lwjgl.vulkan.VK12;
@@ -61,6 +62,16 @@ public abstract class VulkanRenderPassMixin {
     @Shadow
     @Final
     private VkCommandBuffer commandBuffer;
+
+    @Inject(method = "setUniform(Ljava/lang/String;Lcom/mojang/blaze3d/buffers/GpuBuffer;)V", at = @At("TAIL"))
+    private void csdt$recordUniformInspectorBuffer(String name, GpuBuffer buffer, CallbackInfo ci) {
+        UniformInspectorService.recordUniformBinding("Vulkan", this.pipeline == null ? null : this.pipeline.info(), name, buffer);
+    }
+
+    @Inject(method = "setUniform(Ljava/lang/String;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V", at = @At("TAIL"))
+    private void csdt$recordUniformInspectorSlice(String name, GpuBufferSlice slice, CallbackInfo ci) {
+        UniformInspectorService.recordUniformBinding("Vulkan", this.pipeline == null ? null : this.pipeline.info(), name, slice);
+    }
 
     @Inject(method = "pushDescriptors", at = @At("HEAD"), cancellable = true)
     private void csdt$pushShaderDebugDescriptor(CallbackInfo ci) {
