@@ -42,7 +42,7 @@ public class CoreShaderDevToolsClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (reloadCoreShadersKey.consumeClick()) {
-                ShaderReloadService.reloadCoreShadersOnly();
+                ShaderReloadService.reloadAllShadersFromHub();
             }
 
             while (openShaderDevToolsMenuKey.consumeClick()) {

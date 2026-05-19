@@ -1,9 +1,16 @@
 package com.seailz.csdt.client.service;
 
+import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.shaders.ShaderSource;
 import com.mojang.logging.LogUtils;
 import com.seailz.csdt.client.mixins.ShaderManagerMixin;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.ShaderManager;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -13,7 +20,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +33,7 @@ public final class ShaderReloadService {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<ReloadScope, ReloadStat> STATS = new EnumMap<>(ReloadScope.class);
+    private static ReloadScope pendingReloadScope;
 
     static {
         for (ReloadScope scope : ReloadScope.values()) {
@@ -56,8 +67,27 @@ public final class ShaderReloadService {
     }
 
     private static void enqueueReload(ReloadScope scope) {
-        Minecraft minecraft = Minecraft.getInstance();
-        minecraft.execute(() -> reloadNow(minecraft, scope));
+        synchronized (ShaderReloadService.class) {
+            pendingReloadScope = mergePendingScope(pendingReloadScope, scope);
+        }
+    }
+
+    public static void runPendingReloadAfterFrame(Minecraft minecraft) {
+        ReloadScope scope;
+        synchronized (ShaderReloadService.class) {
+            scope = pendingReloadScope;
+            pendingReloadScope = null;
+        }
+        if (scope != null) {
+            reloadNow(minecraft, scope);
+        }
+    }
+
+    private static ReloadScope mergePendingScope(ReloadScope current, ReloadScope next) {
+        if (current == null || current == next) {
+            return next;
+        }
+        return ReloadScope.ALL;
     }
 
     private static void reloadNow(Minecraft minecraft, ReloadScope scope) {
@@ -75,8 +105,10 @@ public final class ShaderReloadService {
                 case ALL -> prepared;
             };
 
-            if (scope == ReloadScope.POST_ONLY) {
-                replaceCompilationCache(shaderManager, merged);
+            if (scope == ReloadScope.CORE_ONLY) {
+                replaceCompilationCachePreservingPostChains(shaderManager, merged);
+            } else if (scope == ReloadScope.POST_ONLY) {
+                replaceCompilationCacheClosingPostChains(shaderManager, merged);
             } else {
                 ((ShaderManagerMixin) shaderManager).csdt$apply(merged, resourceManager, profiler);
             }
@@ -101,13 +133,60 @@ public final class ShaderReloadService {
         return (ShaderManager.Configs) compilationConfigsField().get(compilationCache);
     }
 
-    private static void replaceCompilationCache(ShaderManager shaderManager, ShaderManager.Configs configs) throws ReflectiveOperationException {
+    private static void replaceCompilationCachePreservingPostChains(ShaderManager shaderManager, ShaderManager.Configs configs) throws ReflectiveOperationException {
         Field compilationCacheField = compilationCacheField();
         Object oldCache = compilationCacheField.get(shaderManager);
-        Method closeMethod = oldCache.getClass().getDeclaredMethod("close");
-        closeMethod.setAccessible(true);
-        closeMethod.invoke(oldCache);
+        Object newCache = newCompilationCache(shaderManager, configs);
+        precompileStaticPipelines(newCache);
+
+        Map<?, ?> oldPostChains = postChains(oldCache);
+        Map<Object, Object> newPostChains = postChains(newCache);
+        // Core-only reloads keep post effect configs and must also keep any live PostChain instances alive.
+        newPostChains.putAll(oldPostChains);
+        oldPostChains.clear();
+
+        closeCompilationCache(oldCache);
+        compilationCacheField.set(shaderManager, newCache);
+    }
+
+    private static void replaceCompilationCacheClosingPostChains(ShaderManager shaderManager, ShaderManager.Configs configs) throws ReflectiveOperationException {
+        Field compilationCacheField = compilationCacheField();
+        Object oldCache = compilationCacheField.get(shaderManager);
+        closeCompilationCache(oldCache);
         compilationCacheField.set(shaderManager, newCompilationCache(shaderManager, configs));
+    }
+
+    private static void closeCompilationCache(Object cache) throws ReflectiveOperationException {
+        Method closeMethod = cache.getClass().getDeclaredMethod("close");
+        closeMethod.setAccessible(true);
+        closeMethod.invoke(cache);
+    }
+
+    private static void precompileStaticPipelines(Object compilationCache) {
+        HashSet<RenderPipeline> pipelines = new HashSet<>(RenderPipelines.getStaticPipelines());
+        List<Identifier> invalidPipelines = new ArrayList<>();
+        GpuDevice device = RenderSystem.getDevice();
+        device.clearPipelineCache();
+        ShaderSource shaderSource = (identifier, shaderType) -> {
+            try {
+                return (String) getShaderSourceMethod().invoke(compilationCache, identifier, shaderType);
+            } catch (ReflectiveOperationException exception) {
+                throw new IllegalStateException("Failed to read shader source for " + identifier + " " + shaderType, exception);
+            }
+        };
+
+        for (RenderPipeline pipeline : pipelines) {
+            CompiledRenderPipeline compiled = device.precompilePipeline(pipeline, shaderSource);
+            if (!compiled.isValid()) {
+                invalidPipelines.add(pipeline.getLocation());
+            }
+        }
+
+        if (!invalidPipelines.isEmpty()) {
+            device.clearPipelineCache();
+            device.loadCriticalShaders();
+            throw new RuntimeException("Failed to compile core shader pipeline(s):\n" + String.join("\n", invalidPipelines.stream().map(Identifier::toString).toList()));
+        }
     }
 
     private static Object newCompilationCache(ShaderManager shaderManager, ShaderManager.Configs configs) throws ReflectiveOperationException {
@@ -138,6 +217,24 @@ public final class ShaderReloadService {
         Field field = Class.forName("net.minecraft.client.renderer.ShaderManager$CompilationCache").getDeclaredField("configs");
         field.setAccessible(true);
         return field;
+    }
+
+    private static Field postChainsField() throws ClassNotFoundException, NoSuchFieldException {
+        Field field = Class.forName("net.minecraft.client.renderer.ShaderManager$CompilationCache").getDeclaredField("postChains");
+        field.setAccessible(true);
+        return field;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<Object, Object> postChains(Object compilationCache) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        return (Map<Object, Object>) postChainsField().get(compilationCache);
+    }
+
+    private static Method getShaderSourceMethod() throws ClassNotFoundException, NoSuchMethodException {
+        Method method = Class.forName("net.minecraft.client.renderer.ShaderManager$CompilationCache")
+                .getDeclaredMethod("getShaderSource", Identifier.class, com.mojang.blaze3d.shaders.ShaderType.class);
+        method.setAccessible(true);
+        return method;
     }
 
     public enum ReloadScope {
