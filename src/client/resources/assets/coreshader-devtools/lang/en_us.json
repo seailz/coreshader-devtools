@@ -1,6 +1,6 @@
 {
   "key.category.coreshader-devtools.main": "Shader DevTools",
-  "key.coreshader-devtools.reload_core_shaders": "Reload Core Shaders",
+  "key.coreshader-devtools.reload_core_shaders": "Reload Shaders",
   "key.coreshader-devtools.shader_dev_tools_menu": "Open Shader DevTools",
   "screen.coreshader-devtools.shader_dev_tools": "Shader DevTools",
   "screen.coreshader-devtools.shader_inventory": "Shader List",
