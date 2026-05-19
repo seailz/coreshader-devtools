@@ -9,33 +9,30 @@ https://github.com/user-attachments/assets/3cfe6218-7ea1-4d3d-81db-04d28ee53dd6
 
 
 ## Features
-- Reload shaders, both core and post, on demand without having to fully reload the resource pack
-- Live editing of shader files in-game with syntax highlighting
-- When a shader exists in multiple packs (including vanilla), ability to edit each of those individually (except vanilla shaders, which are read-only) and force load them
-- Ability to quickly visualize what a shader is rendering
-- Parsing of post effect JSON files, and the ability to edit these too
-- Parsing and visualization of all render pipelines
-- Ability to override any value in the `Globals` uniform buffer
+- In-game Shader DevTools menu, available with `G` by default, with reload, browser, inspector, override, and log tools
+- Reload core shaders, post shaders, or both on demand without fully reloading the resource pack
+- Quick core shader reload keybind, available with `R` by default
+- Searchable core shader and post effect list, with overridden entries shown first
+- Live editing of shader and post effect files in-game, with GLSL and JSON syntax highlighting
+- Create editable overrides for vanilla/resource-pack shader sources, save them, delete editable sources, and copy source text
+- When a shader exists in multiple packs, inspect each source individually and force the active source without changing pack order
+- Quickly visualize fragment shader output by replacing the shader result with a debug view
+- Parse post effect JSON files, edit them, and inspect their target/pass graph while editing
+- Force a post effect from its detail screen for debugging, then release it without restarting the client
+- Search and inspect all registered render pipelines, including shader links, vertex formats, samplers, uniforms, defines, targets, and depth/stencil state
+- Inspect uniform bindings live
+- Manually override `Globals` uniform values 
+- Inspect captured sampler bindings by pipeline, preview bound textures, read individual pixels, and copy 16x16 readbacks
+- Live log viewer for the latest `logs/latest.log` lines
+- On-screen debug summary for renderer, world, active post effect, globals overrides, and recent reload timings
 - Shader debug logging via `dbg(...)` inside core and post shaders, with output written to the Minecraft log
+- Local MCP server which can refresh shaders and take in-game screenshots
 
 ### Shader Debug Logging
 
-You can add calls like `dbg("time=" + GameTime);` to supported shader programs and the value will be written to `logs/latest.log`.
-
-Notes:
-- Works on both OpenGL and Vulkan
-- ASCII string literals are supported
-- Top-level string concatenation is supported, so `"abc" + someValue` works
-- Common scalar and vector values are converted to text automatically
-
-Warning:
-- `dbg(...)` is still expensive in hot shaders, especially fragment shaders
-- Frequently changing values such as `GameTime` can reduce FPS if logged aggressively
+You can add calls like `dbg("time=" + GameTime);` to supported shader programs and the value will be written to `logs/latest.log`. It works on
+both OpenGL and Vulkan, supports ASCII, and you can do top level concatenation such as `dbg("pos=" + WorldPos);`. The mod will convert the value to a string itself.
 
 ### MCP
 
-When the client starts, Shader DevTools opens a local control server on `127.0.0.1:34783`. The repository includes a tiny stdio MCP server at `mcp/csdt_mcp_server.py` with tools for `refresh_shaders` and `take_screenshot`.
-
-## License
-
-MIT
+The repository also includes a MCP server at `mcp/csdt_mcp_server.py` with tools for `refresh_shaders` and `take_screenshot`.

@@ -1,6 +1,6 @@
 # Shader DevTools MCP
 
-This is a tiny stdio MCP server for a running Shader DevTools client.
+MCP server for a running Shader DevTools client.
 
 The Minecraft client opens a local control server at `http://127.0.0.1:34783` by default. You can override it with JVM system properties:
 
